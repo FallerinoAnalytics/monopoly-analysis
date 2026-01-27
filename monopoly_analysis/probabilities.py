@@ -56,14 +56,30 @@ class Probabilities:
             for field, count in field_counts.items()
         }
 
-        for chance_field in [7, 22, 36]:
+        for chance_field in [7, 22, 36]:  # Chance Card Fields
             if chance_field in result:
                 result[chance_field] = probability_no_change
 
         return result
 
-    def get_probabilities_of_community_chest_cards(self):
-        pass
+    def get_probabilities_of_community_chest_cards(self, total_cards: int, pos_changing_cards: int) -> dict[int:float]:
+        possible_targets = self.target_fields_community_chest_cards
+        total_cards = total_cards
+        pos_changing_cards = pos_changing_cards
+        probability_per_card = 1 / total_cards
+        probability_no_change = (total_cards - pos_changing_cards) / total_cards
+        field_counts = Counter(possible_targets)
+
+        result = {
+            field: count * probability_per_card
+            for field, count in field_counts.items()
+        }
+
+        for community_field in [2, 17, 33]:  # Community Chest Card Fields
+            if community_field in result:
+                result[community_field] = probability_no_change
+
+        return result
 
     def create_standard_events(self):
         pass
