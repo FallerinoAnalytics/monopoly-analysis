@@ -1,5 +1,5 @@
 import probabilities
 
 ini = probabilities.Probabilities()
-probs = ini.get_dice_probabilities_of_doubles()
+probs = ini.get_probabilities_of_chance_cards(16, 9)
 print(probs)

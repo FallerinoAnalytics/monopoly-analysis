@@ -6,6 +6,8 @@ class Probabilities:
         self.dice_probabilities_wo_doubles = self.get_dice_probabilities_wo_doubles()
         self.dice_probabilities_of_doubles = self.get_dice_probabilities_of_doubles()
         self.board_fields = range(0, 40)
+        self.target_fields_chance_cards = [0, 1, 4, 5, 5, 7, 11, 15, 19, 22, 24, 25, 33, 36, 39, 30]
+        self.target_fields_community_chest_cards = [0, 2, 17, 30, 33]
 
     @staticmethod
     def get_dice_probabilities_wo_doubles() -> dict[int, float]:
@@ -41,8 +43,24 @@ class Probabilities:
             for dice_sum in range(2, 13)
         }
 
-    def get_probabilities_of_chance_cards(self):
-        pass
+    def get_probabilities_of_chance_cards(self, total_cards: int, pos_changing_cards: int) -> dict[int:float]:
+        possible_targets = self.target_fields_chance_cards
+        total_cards = total_cards
+        pos_changing_cards = pos_changing_cards
+        probability_per_card = 1 / total_cards
+        probability_no_change = (total_cards - pos_changing_cards) / total_cards
+        field_counts = Counter(possible_targets)
+
+        result = {
+            field: count * probability_per_card
+            for field, count in field_counts.items()
+        }
+
+        for chance_field in [7, 22, 36]:
+            if chance_field in result:
+                result[chance_field] = probability_no_change
+
+        return result
 
     def get_probabilities_of_community_chest_cards(self):
         pass
