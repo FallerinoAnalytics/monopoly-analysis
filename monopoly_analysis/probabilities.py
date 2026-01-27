@@ -5,7 +5,6 @@ class Probabilities:
     def __init__(self):
         self.dice_probabilities_wo_doubles = self.get_dice_probabilities_wo_doubles()
         self.board_fields = range(0, 40)
-        self.name = "Luis"
 
     @staticmethod
     def get_dice_probabilities_wo_doubles() -> dict[int, float]:
