@@ -1,4 +1,12 @@
+from dataclasses import dataclass
 from collections import Counter
+
+
+@dataclass(frozen=True)
+class MonopolyState:
+    position: int
+    counter: int
+    in_jail: bool
 
 
 class Probabilities:
@@ -80,12 +88,6 @@ class Probabilities:
                 result[community_field] = probability_no_change
 
         return result
-
-    def create_standard_events(self):
-        pass
-
-    def create_special_events(self):
-        pass
 
     def create_state_space(self):
         pass
