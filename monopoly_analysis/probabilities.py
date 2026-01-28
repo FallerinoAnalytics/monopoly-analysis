@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from collections import Counter
+import game_board
 
 
 @dataclass(frozen=True)
@@ -11,11 +12,12 @@ class MonopolyState:
 
 class Probabilities:
     def __init__(self):
+        game_version = game_board.GermanMonopoly()
         self.dice_probabilities_wo_doubles = self.get_dice_probabilities_wo_doubles()
         self.dice_probabilities_of_doubles = self.get_dice_probabilities_of_doubles()
         self.board_fields = range(0, 40)
-        self.target_fields_chance_cards = [0, 1, 4, 5, 5, 7, 11, 15, 19, 22, 24, 25, 33, 36, 39, 30]
-        self.target_fields_community_chest_cards = [0, 2, 17, 30, 33]
+        self.target_fields_chance_cards = game_version.target_fields_chance_cards
+        self.target_fields_community_chest_cards = game_version.target_fields_community_chest_cards
 
     @staticmethod
     def get_dice_probabilities_wo_doubles() -> dict[int, float]:
@@ -89,6 +91,17 @@ class Probabilities:
 
         return result
 
-    def create_state_space(self):
-        pass
+    @staticmethod
+    def create_state_space() -> list:
+        states = []
+        for pos in range(40):
+            if pos == 10:
+                for counter in range(3):
+                    states.append(MonopolyState(pos, counter, False))
+                    states.append(MonopolyState(pos, counter, True))
+            else:
+                for counter in range(3):
+                    states.append(MonopolyState(pos, counter, False))
+
+        return states
 
