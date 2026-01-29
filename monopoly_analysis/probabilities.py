@@ -1,52 +1,36 @@
 from dataclasses import dataclass
-from collections import Counter
+from collections import Counter, defaultdict
+import numpy as np
 import game_board
 
 
 @dataclass(frozen=True)
 class MonopolyState:
-    position: int
-    counter: int
-    in_jail: bool
+    position: int  # Field Number
+    counter: int  # Doubles Counter / Round in Jail Counter
+    in_jail: bool  # True only on Field 10 possible
 
 
 class Probabilities:
     def __init__(self):
         game_version = game_board.GermanMonopoly()
-        self.dice_probabilities_wo_doubles = self.get_dice_probabilities_wo_doubles()
-        self.dice_probabilities_of_doubles = self.get_dice_probabilities_of_doubles()
-        self.board_fields = range(0, 40)
+        self.dice_probabilities = self.get_dice_probabilities()
+        self.board_fields = game_version.board_fields
+        self.jail_field = game_version.jail_field  # 10 (int)
+        self.go_in_jail_field = game_version.go_in_jail_field  # 30 (int)
         self.target_fields_chance_cards = game_version.target_fields_chance_cards
         self.target_fields_community_chest_cards = game_version.target_fields_community_chest_cards
 
     @staticmethod
-    def get_dice_probabilities_wo_doubles() -> dict[int, float]:
+    def get_dice_probabilities() -> dict[int, float]:
         sums = (
             d1 + d2
             for d1 in range(1, 7)
             for d2 in range(1, 7)
-            if d1 != d2
         )
 
         sum_counts = Counter(sums)
-        total_outcomes = 30  # 6*6 - 6 Doubles
-
-        return {
-            dice_sum: round(sum_counts.get(dice_sum, 0) / total_outcomes, 4)
-            for dice_sum in range(2, 13)
-        }
-
-    @staticmethod
-    def get_dice_probabilities_of_doubles() -> dict[int, float]:
-        sums = (
-            d1 + d2
-            for d1 in range(1, 7)
-            for d2 in range(1, 7)
-            if d1 == d2
-        )
-
-        sum_counts = Counter(sums)
-        total_outcomes = 6  # 6 Doubles
+        total_outcomes = 36  # 6*6 - 6 Doubles
 
         return {
             dice_sum: round(sum_counts.get(dice_sum, 0) / total_outcomes, 4)
@@ -91,17 +75,47 @@ class Probabilities:
 
         return result
 
-    @staticmethod
-    def create_state_space() -> list:
+    def create_state_space(self) -> list[MonopolyState]:
         states = []
-        for pos in range(40):
-            if pos == 10:
-                for counter in range(3):
-                    states.append(MonopolyState(pos, counter, False))
-                    states.append(MonopolyState(pos, counter, True))
-            else:
-                for counter in range(3):
-                    states.append(MonopolyState(pos, counter, False))
+        for pos in self.board_fields:
+            if pos == self.go_in_jail_field:  # it's not possible to end a move on "go in jail"-field!
+                continue
+            for counter in range(3):
+                states.append(MonopolyState(pos, counter, False))  # counter = doubles streak
+                if pos == self.jail_field:
+                    states.append(MonopolyState(pos, counter, True))  # counter = rounds in jail
 
         return states
+
+    @staticmethod
+    def calculate_all_transitions(
+            current_state: MonopolyState,
+            probs_dice: dict,
+            probs_chance: dict,
+            probs_community: dict
+    ) -> list[tuple[MonopolyState, float]]:
+        transitions = []
+
+        return transitions
+
+    def create_transition_matrix(self, state_space: list[MonopolyState]):
+        probs_chance = self.get_probabilities_of_chance_cards(16, 9)
+        probs_community = self.get_probabilities_of_community_chest_cards(16, 2)
+        probs_dice = self.dice_probabilities
+
+        n_states = len(state_space)
+        transition_matrix = np.zeros((n_states, n_states))
+
+        # Mapping: MonopolyState → Index
+        state_to_index = {state: i for i, state in enumerate(state_space)}
+        index_to_state = {i: state for i, state in enumerate(state_space)}
+
+        #Logik
+        for i, current_state in enumerate(state_space):
+            for next_state, probability in self.calculate_all_transitions(current_state, probs_dice, probs_chance, probs_community):
+                j = state_to_index[next_state]
+
+
+
+
 
