@@ -3,7 +3,4 @@ import probabilities
 if __name__ == "__main__":
     ini = probabilities.Probabilities()
     probs = ini.get_probabilities_of_community_chest_cards(16, 2)
-    zustandsraum = ini.create_state_space()
-    matrix = ini.create_transition_matrix(zustandsraum)
-    print(matrix)
-    print(len(zustandsraum))
+    ini.get_states_after_frist_roll(probabilities.MonopolyState(0, 0, False), ini.dice_probabilities, ini.doubles_probabilities)

@@ -10,11 +10,15 @@ class MonopolyState:
     counter: int  # Doubles Counter / Round in Jail Counter
     in_jail: bool  # True only on Field 10 possible
 
+    def __hash__(self):
+        return hash((self.position, self.counter, self.in_jail))
+
 
 class Probabilities:
     def __init__(self):
         game_version = game_board.GermanMonopoly()
         self.dice_probabilities = self.get_dice_probabilities()
+        self.doubles_probabilities = self.get_doubles_probabilities()
         self.board_fields = game_version.board_fields
         self.jail_field = game_version.jail_field  # 10 (int)
         self.go_in_jail_field = game_version.go_in_jail_field  # 30 (int)
@@ -30,11 +34,28 @@ class Probabilities:
         )
 
         sum_counts = Counter(sums)
-        total_outcomes = 36  # 6*6 - 6 Doubles
+        total_outcomes = 36
 
         return {
             dice_sum: round(sum_counts.get(dice_sum, 0) / total_outcomes, 4)
             for dice_sum in range(2, 13)
+        }
+
+    @staticmethod
+    def get_doubles_probabilities() -> dict[int, float]:
+        sums = (
+            d1 + d2
+            for d1 in range(1, 7)
+            for d2 in range(1, 7)
+            if d1 is d2
+        )
+
+        sum_counts = Counter(sums)
+        total_outcomes = 36
+
+        return {
+            dice_sum: round(count / total_outcomes, 4)
+            for dice_sum, count in sum_counts.items()
         }
 
     def get_probabilities_of_chance_cards(self, total_cards: int, pos_changing_cards: int) -> dict[int:float]:
@@ -88,6 +109,25 @@ class Probabilities:
         return states
 
     @staticmethod
+    def get_states_after_frist_roll(current_state: MonopolyState, probs_dice: dict, probs_doubles: dict) -> set[[MonopolyState, float]]:
+        states = set()
+        # MonopolyState (0, 0, False)
+        for dice_sum, probability in probs_dice.items():
+            new_position = (current_state.position + dice_sum) % 40
+            next_state = MonopolyState(position=new_position, counter=0, in_jail=False)
+            states.add((next_state, probability))
+
+        if current_state.counter < 2:
+            for dice_sum, probability in probs_doubles.items():
+                new_position = (current_state.position + dice_sum) % 40
+                next_state = MonopolyState(position=new_position, counter=current_state.counter + 1, in_jail=False)
+                states.add((next_state, probability))
+
+        print(states)
+        print(len(states))
+        return states
+
+    @staticmethod
     def calculate_all_transitions(
             current_state: MonopolyState,
             probs_dice: dict,
@@ -110,12 +150,8 @@ class Probabilities:
         state_to_index = {state: i for i, state in enumerate(state_space)}
         index_to_state = {i: state for i, state in enumerate(state_space)}
 
-        #Logik
+        # Logik
         for i, current_state in enumerate(state_space):
-            for next_state, probability in self.calculate_all_transitions(current_state, probs_dice, probs_chance, probs_community):
+            for next_state, probability in self.calculate_all_transitions(current_state, probs_dice, probs_chance,
+                                                                          probs_community):
                 j = state_to_index[next_state]
-
-
-
-
-
