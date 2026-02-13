@@ -30,6 +30,6 @@ class GermanMonopoly:
         return self.railroads[0]
 
     @staticmethod
-    def get_three_back(self, current_field: int) -> int:
+    def get_three_back(current_field: int) -> int:
         return (current_field - 3) % 40
 
