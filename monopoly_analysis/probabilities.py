@@ -47,7 +47,7 @@ class Probabilities:
             d1 + d2
             for d1 in range(1, 7)
             for d2 in range(1, 7)
-            if d1 is d2
+            if d1 == d2
         )
 
         sum_counts = Counter(sums)
@@ -58,10 +58,8 @@ class Probabilities:
             for dice_sum, count in sum_counts.items()
         }
 
-    def get_probabilities_of_chance_cards(self, total_cards: int, pos_changing_cards: int) -> dict[int:float]:
+    def get_probabilities_of_chance_cards(self, total_cards: int, pos_changing_cards: int) -> dict[int, float]:
         possible_targets = self.target_fields_chance_cards
-        total_cards = total_cards
-        pos_changing_cards = pos_changing_cards
         probability_per_card = 1 / total_cards
         probability_no_change = (total_cards - pos_changing_cards) / total_cards
         field_counts = Counter(possible_targets)
@@ -108,50 +106,12 @@ class Probabilities:
 
         return states
 
-    @staticmethod
-    def get_states_after_frist_roll(current_state: MonopolyState, probs_dice: dict, probs_doubles: dict) -> set[[MonopolyState, float]]:
-        states = set()
-        # MonopolyState (0, 0, False)
-        for dice_sum, probability in probs_dice.items():
-            new_position = (current_state.position + dice_sum) % 40
-            next_state = MonopolyState(position=new_position, counter=0, in_jail=False)
-            states.add((next_state, probability))
-
-        if current_state.counter < 2:
-            for dice_sum, probability in probs_doubles.items():
-                new_position = (current_state.position + dice_sum) % 40
-                next_state = MonopolyState(position=new_position, counter=current_state.counter + 1, in_jail=False)
-                states.add((next_state, probability))
-
-        print(states)
-        print(len(states))
-        return states
-
-    @staticmethod
-    def calculate_all_transitions(
-            current_state: MonopolyState,
-            probs_dice: dict,
-            probs_chance: dict,
-            probs_community: dict
-    ) -> list[tuple[MonopolyState, float]]:
-        transitions = []
-
-        return transitions
-
     def create_transition_matrix(self, state_space: list[MonopolyState]):
         probs_chance = self.get_probabilities_of_chance_cards(16, 9)
         probs_community = self.get_probabilities_of_community_chest_cards(16, 2)
         probs_dice = self.dice_probabilities
+        probs_doubles = self.doubles_probabilities
 
         n_states = len(state_space)
         transition_matrix = np.zeros((n_states, n_states))
 
-        # Mapping: MonopolyState → Index
-        state_to_index = {state: i for i, state in enumerate(state_space)}
-        index_to_state = {i: state for i, state in enumerate(state_space)}
-
-        # Logik
-        for i, current_state in enumerate(state_space):
-            for next_state, probability in self.calculate_all_transitions(current_state, probs_dice, probs_chance,
-                                                                          probs_community):
-                j = state_to_index[next_state]
