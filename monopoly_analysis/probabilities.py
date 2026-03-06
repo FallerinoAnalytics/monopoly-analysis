@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from collections import Counter, defaultdict
 import numpy as np
-import game_board
+from monopoly_analysis import game_board
 
 
 @dataclass(frozen=True)
